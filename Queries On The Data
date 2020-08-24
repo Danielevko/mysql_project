@@ -1,0 +1,136 @@
+#1
+select concat(customers.first_name, " ", customers.last_name) as 'full name' ,
+sum(price) as 'total price', count(*) 'total items' from customers, movies, orders, tv_shows
+where price is not null and orders.movie_id=movies.movie_id and 
+customers.customer_id=orders.customer_id and tv_shows.tv_show_id=orders.tv_show_id
+group by customers.customer_id;
+use vod;
+#2
+select movies.name, count(*) as 'count_movie', movies.movie_id 
+from movies, orders
+where orders.movie_id=movies.movie_id and movies.movie_id!=0
+group by orders.movie_id
+order by count_movie desc;
+
+#3
+select sum(price),s.type
+from customers c join subscriptions s
+on c.subscription_type=s.type
+group by s.type;
+
+#4
+Select c.first_name, c.last_name, cm.malfunction_id,cm.description,cm.date_of_report
+from customers c, customers_malfunctions cm
+where c.subscription_type is null and c.customer_id=cm.customer_id;
+
+#5
+select c.end_of_subscribe as 'subscribe ends at',c.customer_id as 'contact id',
+concat( c.first_name, " ",c.last_name) as 'full name' ,c.phone_number as 'phone number',
+c.email as 'contact email', s.type as 'subscribtion type'
+from customers c, subscriptions s
+where c.end_of_subscribe > curdate() and c.subscription_type=s.type
+order by c.end_of_subscribe;
+
+#6
+SELECT m.movie_id, m.name, m.rating
+FROM movies m join movies_genres mg 
+WHERE mg.movie_id=m.movie_id and m.movie_id in
+(SELECT movie_id 
+FROM movies
+where movies.rating between 8 and 9)
+group by m.movie_id;
+
+#7
+CREATE VIEW movies_and_tv_shows AS
+SELECT movies.name as 'product', movies.language as 'language', movies.producer, movies.rating
+FROM movies 
+where movies.name not like '%selected'
+union
+select tv_shows.name ,tv_shows.language , tv_shows.producer,tv_shows.rating
+from tv_shows
+where tv_shows.name not like '%selected';
+
+select * from movies_and_tv_shows
+where language!='english';
+
+#8(function+query)
+DELIMITER //
+CREATE FUNCTION no_of_years(date1 date) RETURNS int DETERMINISTIC
+BEGIN
+ DECLARE date2 DATE;
+  Select current_date()into date2;
+  RETURN year(date2)-year(date1);
+END 
+//
+DELIMITER ;
+
+select  concat(first_name," ", last_name) as 'full name' ,no_of_years(date_of_employment)
+ as 'seniority' from employees;
+
+#9(function+query)
+
+DELIMITER //
+
+CREATE FUNCTION discount_on_price1(price1 int, number_of_discount int) RETURNS int DETERMINISTIC
+BEGIN
+ DECLARE price2 float;
+ select (1-(0.01*number_of_discount)) into price2;
+  RETURN price1*price2;
+END 
+//
+DELIMITER ;
+select concat(customers.first_name, " ", customers.last_name) as 'full name',
+ subscriptions.price, discount_on_price1(subscriptions.price,10) 
+from customers, orders,subscriptions
+where subscriptions.type=customers.subscription_type and customers.customer_id=orders.customer_id
+group by customers.customer_id;
+
+#10
+select c.first_name,c.last_name,sum(price) s
+from customers c join orders o
+on c.customer_id=o.customer_id
+where price is not null
+group by c.customer_id 
+order by s desc
+limit 1;
+
+
+#11
+select manager.first_name,manager.last_name,manager.specialization,
+count(emp.employee_id) as number_of_employments 
+from employees as manager, employees as emp
+where manager.employee_id=emp.manager_id
+group by manager.employee_id;
+
+#12
+select employee_id,count(malfunction_id) 'reports handeled'
+from employees_malfunctions
+group by employee_id;
+
+#13
+update customers set subscription_type='1', beginning_of_subscribe=curdate(),
+end_of_subscribe=curdate() + 100
+where customer_id=5;
+
+#14
+delete from customers_malfunctions where customer_id=4 and malfunction_id=4;
+
+#15
+insert into employees(employee_id,first_name,last_name,specialization,date_of_employment)
+select customer_id,first_name,last_name,'marketing',curdate() from customers where customer_id=1;
+
+#16
+
+DELIMITER $$
+       CREATE TRIGGER fee_change BEFORE INSERT ON `employees_malfunctions`
+    FOR EACH ROW BEGIN
+      IF (NEW.malfunction_id =5) THEN
+            SET NEW.fee = 100;
+      ELSE
+            SET NEW.fee = 0;
+      END IF; 
+   END$$
+insert into employees_malfunctions (employee_id, malfunction_id)
+values
+(205,5),
+(408,3);
