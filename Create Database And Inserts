@@ -1,0 +1,369 @@
+CREATE DATABASE vod;
+use vod;
+
+CREATE TABLE `vod`.`actors` (
+  `actor_id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`actor_id`))
+  ENGINE=InnoDB;
+
+CREATE TABLE `vod`.`tv_shows` (
+  `tv_show_id` INT NOT NULL,
+  `language` VARCHAR(45) NULL DEFAULT 'unspecified',
+  `name` VARCHAR(45) NULL,
+  `producer` VARCHAR(45) NULL,
+  `rating` DECIMAL(2,1) NULL CHECK(rating>=0) ,
+  `release_year` YEAR NULL,
+  PRIMARY KEY (`tv_show_id`))
+  ENGINE=InnoDB;
+  
+
+CREATE TABLE `movies` (
+  `movie_id` int(11) NOT NULL,
+  `language` varchar(45) DEFAULT 'unspecified',
+  `name` varchar(45) DEFAULT NULL,
+  `producer` varchar(45) DEFAULT NULL,
+  `rating` decimal(2,1) DEFAULT NULL,
+  `release_year` year(4) DEFAULT NULL,
+  `duration` int(11) DEFAULT NULL,
+  PRIMARY KEY (`movie_id`),
+  CONSTRAINT `movies_chk_1` CHECK ((`rating` >= 0))
+) ENGINE=InnoDB;
+
+CREATE TABLE `actors_in_movies` (
+  `role` varchar(100) DEFAULT NULL,
+  `movies_id` int(11) NOT NULL,
+  `actor_id` int(11) NOT NULL,
+  PRIMARY KEY (`movies_id`,`actor_id`),
+  KEY `actor_id_idx` (`actor_id`),
+  FOREIGN KEY (`actor_id`) REFERENCES `actors` (`actor_id`),
+  FOREIGN KEY (`movies_id`) REFERENCES `movies` (`movie_id`)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE `actors_in_tv_shows` (
+  `role` varchar(100) DEFAULT NULL,
+  `tv_show_id` int(11) NOT NULL,
+  `actor_id` int(11) NOT NULL,
+  PRIMARY KEY (`tv_show_id`,`actor_id`),
+  KEY `actor_id_idx` (`actor_id`),
+  FOREIGN KEY (`actor_id`) REFERENCES `actors` (`actor_id`),
+  FOREIGN KEY (`tv_show_id`) REFERENCES `tv_shows` (`tv_show_id`)) 
+  ENGINE=InnoDB;
+  
+  CREATE TABLE `vod`.`employees` (
+  `employee_id` INT NOT NULL AUTO_INCREMENT,
+  `first_name` VARCHAR(45) NOT NULL,
+  `last_name` VARCHAR(45) NOT NULL,
+  `specialization` ENUM('marketing', 'customer support', 'technical','marketing manager','customer support namager'),
+  `manager_id` INT DEFAULT NULL,
+  `date_of_employment` DATE NOT NULL,
+  FOREIGN KEY (`manager_id`) REFERENCES `employees` (`employee_id`),
+  PRIMARY KEY (`employee_id`))
+  ENGINE=InnoDB;
+  
+  CREATE TABLE `subscriptions` (
+  `type` int(11) NOT NULL,
+  `duration(in months)` int(11) NOT NULL,
+  `price` int(11) NOT NULL,
+  PRIMARY KEY (`type`)
+) ENGINE=InnoDB;
+
+
+
+
+
+CREATE TABLE `customers` (
+  `customer_id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(45) DEFAULT NULL,
+  `first_name` varchar(45) NOT NULL,
+  `last_name` varchar(45) NOT NULL,
+  `date_of_birth` date NOT NULL,
+  `phone_number` VARCHAR(10) DEFAULT NULL,
+  `City` varchar(45) NOT NULL,
+  `street` varchar(45) NOT NULL,
+  `subscription_type` int(11) DEFAULT NULL,
+  `beginning_of_subscribe` date DEFAULT NULL,
+  `end_of_subscribe` date DEFAULT NULL,
+  `credit_card_number` varchar(45),
+  PRIMARY KEY (`customer_id`),
+  KEY `subscription_type` (`subscription_type`),
+  CONSTRAINT `customers_ibfk_1` FOREIGN KEY (`subscription_type`) REFERENCES `subscriptions` (`type`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;  
+  CREATE TABLE `malfunctions` (
+  `Malfunctions_id` int(11) NOT NULL,
+  `type` enum('audio','network','not responding','no signal','other','technical') NOT NULL,
+  PRIMARY KEY (`Malfunctions_id`)) 
+  ENGINE=InnoDB ;
+  
+  
+  CREATE TABLE `orders` (
+  `customer_id` int(11) not null,
+    `movie_id` int(11) default "0",
+  `tv_show_id` int(11) default "0",
+   `seriel_number` int(11) not null,
+	`expiration_date` date DEFAULT NULL,
+    `price` int DEFAULT NULL,
+	PRIMARY KEY (`seriel_number`,`customer_id`,`tv_show_id`,`movie_id`),
+	foreign key(customer_id) references customers(customer_id),
+    foreign key(movie_id) references movies(movie_id),
+    foreign key(tv_show_id) references tv_shows(tv_show_id)
+    ) 
+    ENGINE=InnoDB;
+
+
+
+    CREATE TABLE `customers_malfunctions` (
+  `customer_id` int(11) NOT NULL,
+  `malfunction_id` int(11) NOT NULL,
+  `description` varchar(4100) DEFAULT NULL,
+  `date_of_report` timestamp not null,
+  PRIMARY KEY (`customer_id`,`malfunction_id`),
+  FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  FOREIGN KEY (`malfunction_id`) REFERENCES `malfunctions` (`Malfunctions_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB;
+
+
+    CREATE TABLE `employees_malfunctions` (
+  `employee_id` int(11) NOT NULL,
+  `malfunction_id` int(11) NOT NULL,
+  `fee` int,
+  PRIMARY KEY (`employee_id`,`malfunction_id`),
+  FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employee_id`),
+  FOREIGN KEY (`malfunction_id`) REFERENCES `malfunctions` (`Malfunctions_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB;
+
+
+CREATE TABLE `movies_genres` (
+  `movie_id` int(11) NOT NULL,
+  `genre_type` enum('drama','comedy','romantic','action','adventure','crime','history','horror','sci-fi','sport','war') NOT NULL,
+  KEY `movies_genres_ibfk_1` (`movie_id`),
+  CONSTRAINT `movies_genres_ibfk_1` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`movie_id`)
+) ENGINE=InnoDB;
+
+
+
+CREATE TABLE `tv_shows_genres` (
+  `tv_shows_id` int NOT NULL,
+  `genre_type` enum('drama','action','comedy','romantic','adventure','crime','history','horror','sci-fi','sport','war') NOT NULL,
+  KEY `tv_shows_genres_ibfk_1` (`tv_shows_id`),
+  CONSTRAINT `tv_shows_genres_ibfk_1` FOREIGN KEY (`tv_shows_id`) REFERENCES `tv_shows` (`tv_show_id`)
+) ENGINE=InnoDB;
+
+
+INSERT INTO `vod`.`movies` (`movie_id`, `language`, `name`, `producer`, `rating`, `release_year`,`duration`) 
+VALUES ('1','english','the Shawshank Redemption', 'Frank Darabont',9.3,1994,200),
+('2','english','the dark night', 'christopher nolan', 9,2008,120),
+('3','english', 'fight club', 'david fincher', 8.8,1999,240),
+('4','english','joker', 'todd phillips',8.6,2019,180),
+('5','hebrew', 'eskimo lemon','tzvi shissel', 3.7, 2001,50),
+('6','english', 'disaster movie', 'jason friedberg', 1.9, 2008,100),
+('7','english' , 'the pianist', 'roman polanski', 8.5,2002,300),
+('8','hebrew', 'charlie and a half', 'boaz davidson', 6.8,1974,70),
+('9','japanease', 'tokyo monogatari', 'yasujiro ozu' , 8.2, 1953,55),
+('10','japanease', 'rashomon', 'akira kurosawa', 8.2, 1950,80),
+('0', 'no movie selected', 'no movie selected', 'no movie selected',0,0,0);
+
+
+INSERT INTO `vod`.`subscriptions` (`type`, `duration(in months)`, `price`) VALUES ('1', '1', '20');
+INSERT INTO `vod`.`subscriptions` (`type`, `duration(in months)`, `price`) VALUES ('2', '6', '100');
+INSERT INTO `vod`.`subscriptions` (`type`, `duration(in months)`, `price`) VALUES ('3', '12', '170');
+
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('100', 'Tim Robbins');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('101', 'Morgan Freeman');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('102', 'Bob Gunton');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('103', 'Christian Bale');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('104', 'Heath Ledger');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('105', 'Aaron Eckhart');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('106', 'Brad Pitt');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('107', 'Edward Norton');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('108', 'Joaquin Phoenix');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('109', 'Robert De Niro');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('110', 'tzahi noy');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('111', 'yhonatan segal');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('112', 'Carmen Electra');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('113', 'Vanessa Lachey');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('114', 'Nicole Parker');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('115', 'Adrien Brody');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('116', 'Thomas Kretschmann');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('117', 'Frank Finlay');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('118', 'Yehuda Barkan');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('119', 'Zeev Revach');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('120', 'Chishu Ryu');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('121', 'Chieko Higashiyama');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('122', 'So Yamamura');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('123', 'Toshiro Mifune');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('124', 'Machiko Kyo');
+
+
+INSERT INTO `vod`.`customers` (`customer_id`, `email`, `first_name`, `last_name`, `date_of_birth`, `phone_number`, `City`, `street`, `subscription_type`, `beginning_of_subscribe`, `end_of_subscribe`,`credit_card_number`) VALUES ('1', 'liorbauer565@gmail.com', 'lior', 'bauer', '1994-08-01', '0545906563', 'raanana', 'kazan 8', '2','2020-01-11','2020-07-11','458012411177744');
+INSERT INTO `vod`.`customers` (`customer_id`, `email`, `first_name`, `last_name`, `date_of_birth`, `phone_number`, `City`, `street`, `subscription_type`, `beginning_of_subscribe`, `end_of_subscribe`,`credit_card_number`) VALUES ('2', 'danielevko@gmail.com', 'daniel', 'levkovitz', '1994-12-11', '0547773459', 'tel aviv', 'nachlat binymain 159', '1','2018-09-14','2020-09-14','532610457898434');
+INSERT INTO `vod`.`customers` (`customer_id`, `email`, `first_name`, `last_name`, `date_of_birth`, `phone_number`, `City`, `street`, `subscription_type`, `beginning_of_subscribe`, `end_of_subscribe`,`credit_card_number`) VALUES ('3', 'orbachar@walla.co.il', 'or', 'bachar', '1995-01-12', '0523988135', 'rishon lezion', 'sokolov 5', '1','2013-08-01','2013-09-01','458013576888443');
+INSERT INTO `vod`.`customers` (`customer_id`, `email`, `first_name`, `last_name`, `date_of_birth`, `phone_number`, `City`, `street`, `subscription_type` , `beginning_of_subscribe`, `end_of_subscribe`,`credit_card_number`) VALUES ('4', 'noamaderer@bezeqint.net', 'noa', 'maderer', '1980-10-06', '0537711892', 'kefar sava', 'duvnov 7', '1','2011-04-04','2011-05-04','532615568886654');
+INSERT INTO `vod`.`customers` (`customer_id`, `first_name`, `last_name`, `date_of_birth`, `phone_number`, `City`, `street`,`credit_card_number`) VALUES ('5', 'oded', 'nathan', '1960-09-13', '0546274455', 'petah tikva', 'borochov 5','458012658856365');
+INSERT INTO `vod`.`customers` (`customer_id`, `email`, `first_name`, `last_name`, `date_of_birth`, `City`, `street`, `subscription_type`, `beginning_of_subscribe`, `end_of_subscribe`,`credit_card_number`) VALUES ('6', 'itzikD@facebook.com', 'itzik', 'dermer', '1977-02-04', 'lod', 'kazan 8', '3','2030-04-20','2031-04-20','532611234588666');
+INSERT INTO `vod`.`customers` (`customer_id`, `email`, `first_name`, `last_name`, `date_of_birth`, `phone_number`, `City`, `street`,`credit_card_number`) VALUES ('7', 'barlerer@gmail.com', 'bar', 'lerer', '1990-07-07', '0544997777', 'bat yam', 'arlozorov 50','458011456798854');
+INSERT INTO `vod`.`customers` (`customer_id`, `email`, `first_name`, `last_name`, `date_of_birth`, `City`, `street`, `subscription_type`, `beginning_of_subscribe`, `end_of_subscribe`,`credit_card_number`) VALUES ('8', 'tomaigen344@walla.com', 'tom', 'aigen', '1987-04-07', 'savion', 'maapilim 10', '2','2017-11-26','2020-07-11','458012237893478');
+INSERT INTO `vod`.`customers` (`customer_id`, `first_name`, `last_name`, `date_of_birth`, `phone_number`, `City`, `street`, `subscription_type`, `beginning_of_subscribe`, `end_of_subscribe`,`credit_card_number`) VALUES ('9', 'ariel', 'shturam', '1988-12-06', '0523467890', 'yehud', 'rupin 18', '3','1994-12-20','1995-12-20','532615686794333');
+
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '1', '100');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '1', '101');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '1', '102');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '2', '103');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '2', '104');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '2', '105');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '3', '106');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '3', '107');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '4', '108');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '4', '109');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '5', '110');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '5', '111');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '6', '112');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '6', '113');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '6', '114');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '7', '115');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '7', '116');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '7', '117');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '8', '118');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '8', '119');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '9', '120');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '9', '121');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '9', '122');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('head role', '10', '123');
+INSERT INTO `vod`.`actors_in_movies` (`role`, `movies_id`, `actor_id`) VALUES ('supporting role', '10', '124');
+
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`) VALUES ('1000', 'raz', 'liam', 'marketing manager', '2001-09-10');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`) VALUES ('2000', 'shlomi', 'levi', 'customer support namager', '2002-02-05');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('101', 'gal', 'shekel', 'technical', '2012-08-09','2000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('103', 'shai', 'toledano', 'technical', '2013-10-15','2000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('106', 'joni', 'potaznik', 'technical', '1999-12-01','2000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('203', 'daniel', 'assulin', 'customer support', '2000-04-05','2000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('200', 'clil', 'zairi', 'customer support', '1998-08-09','2000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('403', 'ben', 'bronstein', 'technical', '2008-9-11','2000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('205', 'nadav', 'tal', 'customer support', '2009-09-09','2000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('408', 'ben', 'sharon', 'marketing', '2008-06-05','1000');
+INSERT INTO `vod`.`employees` (`employee_id`, `first_name`, `last_name`, `specialization`, `date_of_employment`,`manager_id`) VALUES ('409', 'samuel', 'amar', 'marketing', '2007-08-01','1000');
+
+INSERT INTO `vod`.`movies_genres`
+(`movie_id`, `genre_type`)
+VALUES (1,'drama'),
+(1,'action'),
+(2, 'action'),
+(2,'crime'),
+(2,'adventure'),
+(3,'crime'),
+(3,'action'),
+(4,'action'),
+(4, 'crime'),
+(5, 'comedy'),
+(5, 'romantic'),
+(6, 'comedy'),
+(7, 'history'),
+(7,'crime'),
+(7, 'drama'),
+(8, 'comedy'),
+(9, 'drama'),
+(10, 'sport'),
+(10,'sci-fi');
+
+INSERT INTO `vod`.`malfunctions` (`Malfunctions_id`, `type`) VALUES ('1', 'audio');
+INSERT INTO `vod`.`malfunctions` (`Malfunctions_id`, `type`) VALUES ('2', 'network');
+INSERT INTO `vod`.`malfunctions` (`Malfunctions_id`, `type`) VALUES ('3', 'not responding');
+INSERT INTO `vod`.`malfunctions` (`Malfunctions_id`, `type`) VALUES ('4', 'no signal');
+INSERT INTO `vod`.`malfunctions` (`Malfunctions_id`, `type`) VALUES ('5', 'technical');
+INSERT INTO `vod`.`malfunctions` (`Malfunctions_id`, `type`) VALUES ('6', 'other');
+
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`,`fee`) VALUES ('101', '5', '100');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`,`fee`) VALUES ('403', '4','0');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`,`fee`) VALUES ('103', '5','100');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`,`fee`) VALUES ('200', '6','0');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`,`fee`) VALUES ('101', '3','0');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`, `fee`) VALUES ('103', '1' ,'0');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`, `fee`) VALUES ('106', '2' ,'0');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`, `fee`) VALUES ('101', '4' ,'0');
+INSERT INTO `vod`.`employees_malfunctions` (`employee_id`, `malfunction_id`, `fee`) VALUES ('103', '4' ,'0');
+
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `producer`, `rating`, `release_year`) VALUES ('9001', 'english', 'the witcher', 'Lauren Schmidt', '8.5', 2019);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `producer`, `rating`, `release_year`) VALUES ('9002', 'english', 'breaking bad', 'Vince Gilligan', '9.5', 2008);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `producer`, `rating`, `release_year`) VALUES ('9003', 'english', 'chernobyl', 'Craig Mazin', '9', 2019);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `rating`, `release_year`) VALUES ('9004', 'english', 'roar', '7.4', 1997);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `rating`, `release_year`) VALUES ('9005', '', '30 for 30', '8.8', 2009);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `producer`, `rating`, `release_year`) VALUES ('9006', 'japanese', 'Digimon: Digital Monsters ', 'Yukio Kaizawa', '7.3', 1999);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `producer`, `rating`, `release_year`) VALUES ('9007', 'english', 'Stranger Things ', 'Matt Duffer', '8.8', 2016);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `producer`, `rating`, `release_year`) VALUES ('9008', 'german', 'dark', 'Baran bo Odar', '8.7', 2017);
+INSERT INTO `vod`.`tv_shows` (`tv_show_id`, `language`, `name`, `producer`, `rating`, `release_year`) VALUES ('0', 'no tv show selected', 'no tv show selected', 'no tv show selected', '0', 0);
+
+
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('125', 'Henry Cavill');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('126', 'Freya Allan');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('127', 'Anya Chalotra');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('128', 'bryan cranston');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('129', 'aaron paul');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('130', 'anna gunn');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('131', 'Jessie Buckley');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('132', 'stellan skasgard');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('133', 'Steve Blum');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('134', 'Mona Marshall');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('135', 'Tifanie Christun');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('136', 'Millie Bobby Brown');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('137', 'Finn Wolfhard');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('138', 'Winona Ryder');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('139', 'Karoline Eichhorn');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('140', 'Louis Hofmann');
+INSERT INTO `vod`.`actors` (`actor_id`, `name`) VALUES ('141', 'Jördis Triebel');
+
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9001', '125');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9001', '126');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9001', '127');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9002', '128');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9002', '129');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9002', '130');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9003', '131');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9003', '132');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9004', '104');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9005', '101');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9006', '133');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9006', '134');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9006', '135');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9007', '136');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9007', '137');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9007', '138');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9008', '139');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('head role', '9008', '140');
+INSERT INTO `vod`.`actors_in_tv_shows` (`role`, `tv_show_id`, `actor_id`) VALUES ('supporting role', '9008', '141');
+
+
+INSERT INTO `vod`.`tv_shows_genres`
+(`tv_shows_id`,
+`genre_type`)
+VALUES
+(9001,'sci-fi'),(9001,'action'),(9001,'adventure'),
+(9002,'crime'),(9002,'drama'),(9002,'action'),
+(9003,'history'),(9003,'drama'),
+(9004,'horror'),
+(9005,'history'),
+(9006,'comedy'),
+(9007,'action'), (9007,'sci-fi'),(9007,'adventure'),
+(9008,'sci-fi'),(9008,'action');
+
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`) VALUES ('1', '1', '1');
+INSERT INTO `vod`.`orders` (`customer_id`, `tv_show_id`, `seriel_number`) VALUES ('1', '9001', '2');
+INSERT INTO `vod`.`orders` (`customer_id`, `tv_show_id`, `seriel_number`) VALUES ('1', '9004', '3');
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`) VALUES ('2', '2', '1');
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`) VALUES ('3', '4', '1');
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`) VALUES ('4', '6', '1');
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`) VALUES ('4', '4', '2');
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`, `expiration_date`, `price`) VALUES ('5', '2', '1', '2020-01-30', '14.90');
+INSERT INTO `vod`.`orders` (`customer_id`, `tv_show_id`, `seriel_number`, `expiration_date`, `price`) VALUES ('5', '9006', '2', '2020-01-30', '14.90');
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`, `expiration_date`, `price`) VALUES ('7', '3', '1', '2020-01-02', '14.90');
+INSERT INTO `vod`.`orders` (`customer_id`, `tv_show_id`, `seriel_number`, `expiration_date`, `price`) VALUES ('7', '9004', '2', '2020-01-25', '14.90');
+INSERT INTO `vod`.`orders` (`customer_id`, `tv_show_id`, `seriel_number`, `expiration_date`, `price`) VALUES ('7', '9006', '3', '2020-01-25', '14.90');
+INSERT INTO `vod`.`orders` (`customer_id`, `movie_id`, `seriel_number`) VALUES ('8', '1', '1');
+
+INSERT INTO `vod`.`customers_malfunctions` (`customer_id`, `malfunction_id`, `description`, `date_of_report`) VALUES ('1', '3', 'can\'t hear the tv. remote volume does not work', '2010-01-09');
+INSERT INTO `vod`.`customers_malfunctions` (`customer_id`, `malfunction_id`, `description`, `date_of_report`) VALUES ('3', '2', 'a window appears saying to connect the internet properly', '2018-03-04');
+INSERT INTO `vod`.`customers_malfunctions` (`customer_id`, `malfunction_id`, `description`, `date_of_report`) VALUES ('4', '4', 'the signal is not strong enough', '2020-09-20');
+INSERT INTO `vod`.`customers_malfunctions` (`customer_id`, `malfunction_id`, `description`, `date_of_report`) VALUES ('5', '5', 'my dog ate the tv cable', '2007-12-10');
+INSERT INTO `vod`.`customers_malfunctions` (`customer_id`, `malfunction_id`, `description`, `date_of_report`) VALUES ('5', '6', 'want to switch subscriptions', '2004-03-08');
+INSERT INTO `vod`.`customers_malfunctions` (`customer_id`, `malfunction_id`, `description`, `date_of_report`) VALUES ('6', '2', 'my network isnt connecting to my smart tv, therefore my live streaming does not work', '1999-03-10');
+INSERT INTO `vod`.`customers_malfunctions` (`customer_id`, `malfunction_id`, `description`, `date_of_report`) VALUES ('9', '1', 'volume is too low when i watch tv. cant turn the volume up', '2006-12-12');
